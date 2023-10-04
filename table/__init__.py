@@ -46,10 +46,12 @@ def handler(request, jsonify):
         tables = cursor.fetchall()
 
         dts = {}
+        table_names = []
 
         # Iterate through the tables and fetch column information for each
         for table in tables:
             table_name = table[0]
+            table_names.append(tables)
             dts[table_name] = []
 
             # Retrieve table metadata
@@ -64,7 +66,7 @@ def handler(request, jsonify):
                 dts[table_name].append(ta)
                 
         print(dts)
-        return jsonify({"tables": dts, }), 200
+        return jsonify({"tables": table_names, "fields": dts}), 200
 
     except Exception as e:
         err = str(e)

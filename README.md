@@ -1,1 +1,1 @@
-# python-hive-query
+# python-flask-hive-query

@@ -51,7 +51,7 @@ def handler(request, jsonify):
         # Iterate through the tables and fetch column information for each
         for table in tables:
             table_name = table[0]
-            table_names.append(tables)
+            table_names.append(table_name)
             dts[table_name] = []
 
             # Retrieve table metadata

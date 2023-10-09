@@ -41,7 +41,7 @@ def handler(request, jsonify):
         cursor = connection.cursor()
 
         # Split the multi-line SQL query into individual statements
-        multi_line_sql = multi_line_sql.replace('\n', '')
+        multi_line_sql = multi_line_sql.replace('\n', ';')
         sql_statements_raw = multi_line_sql.split(';')
         original_lines = [item for item in sql_statements_raw if item != '']
         sql_statements = [

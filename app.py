@@ -1,17 +1,21 @@
 from flask import Flask, request, jsonify
-from query import handler as hive_query
-from table import handler as table
+from query import handler as hive_query_handler
+from table import handler as table_handler
+from test_conn import handler as test_conn_handler
 
 app = Flask(__name__)
 
 @app.route('/hive_query', methods=['POST'])
-def execute_hive_query():
-    return hive_query(request, jsonify)
+def hive_query():
+    return hive_query_handler(request, jsonify)
 
 @app.route('/tables', methods=['GET'])
-def tables():
-    return table(request, jsonify)
+def table():
+    return table_handler(request, jsonify)
 
+@app.route('/test-connection', methods=['GET'])
+def test_conn():
+    return test_conn_handler(request, jsonify)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)

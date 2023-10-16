@@ -1,7 +1,6 @@
 import jaydebeapi
-
-# Hive JDBC driver class name
-driver_class = "org.apache.hive.jdbc.HiveDriver"
+import re
+from connection import handler as connection_handler
 
 def handler(request, jsonify):
     try:
@@ -26,20 +25,6 @@ def handler(request, jsonify):
 
         multi_line_sql = data['query']
 
-        jdbc_url = f"jdbc:hive2://{host}:{port}"
-
-        # Create a JDBC connection
-        connection = jaydebeapi.connect(
-            jclassname=driver_class,
-            url=jdbc_url,
-            driver_args=[username, password],
-            # Replace with the actual path to your Hive JDBC driver JAR file
-            jars="hive-jdbc-uber-2.6.5.0-292.jar",
-        )
-
-        # Create a cursor
-        cursor = connection.cursor()
-
         # Split the multi-line SQL query into individual statements
         multi_line_sql = multi_line_sql.replace('\n', ';')
         sql_statements_raw = multi_line_sql.split(';')
@@ -47,33 +32,52 @@ def handler(request, jsonify):
         sql_statements = [
             line for line in original_lines if not line.startswith('--')]
         print(sql_statements)
+        
+        db = 'default'
 
         # Execute each SQL statement
+        cursor, connection = connection_handler(host, port, username, password, db)
         for index, statement in enumerate(sql_statements):
             if statement.strip():
-                cursor.execute(statement)
                 try:
-                    # Check the type of query to determine the operation
-                    if statement.strip().upper().startswith("SELECT"):
-                        # If it's a SELECT query, fetch the results
+                    if statement.strip().upper().startswith("USE"):
+                        # Use regular expression to extract the word after "USE"
+                        pattern = r"USE\s+(\w+)"
+
+                        # Match and extract the word from both strings
+                        match = re.search(pattern, statement)
+                        if match:
+                            db = match.group(1)
+                            print(db)
+                        
+                        # Create a cursor
+                        cursor, connection = connection_handler(host, port, username, password, db)
                         cursor.execute(statement)
 
+                        # Get the number of affected rows
+                        num_affected_rows = cursor.rowcount
+
+                        if index == len(sql_statements) - 1:
+                            cursor.close()
+                            connection.close()
+                            return jsonify({"message": f"Query executed successfully. Affected rows: {num_affected_rows}"}), 200
+                    # Check the type of query to determine the operation
+                    # If it's a SELECT query, fetch the results
+                    if statement.strip().upper().startswith("SELECT"):
+                        cursor.execute(statement)
                         result = cursor.fetchall()
 
-                        try:
-                            field_names = [desc[0]
-                                           for desc in cursor.description]
-                            if field_names:
-                                fn_rm_prefix = [field.split(".")[1]
-                                                for field in field_names]
+                        field_names = [desc[0]
+                                        for desc in cursor.description]
+                        if field_names:
+                            fn_rm_prefix = [field.split(".")[1]
+                                            for field in field_names]
 
-                                # Check if the current iteration is the last element in the list
-                                if index == len(sql_statements) - 1:
-                                    cursor.close()
-                                    connection.close()
-                                    return jsonify({"datas": result, "fields": fn_rm_prefix}), 200
-                        except:
-                            pass
+                            # Check if the current iteration is the last element in the list
+                            if index == len(sql_statements) - 1:
+                                cursor.close()
+                                connection.close()
+                                return jsonify({"datas": result, "fields": fn_rm_prefix}), 200
 
                         # Check if the current iteration is the last element in the list
                         if index == len(sql_statements) - 1:
@@ -81,8 +85,8 @@ def handler(request, jsonify):
                             connection.close()
                             return jsonify(result), 200
 
+                    # If it's a SHOW query, fetch the results
                     elif statement.strip().upper().startswith("SHOW"):
-                        # If it's a SELECT query, fetch the results
                         cursor.execute(statement)
                         results = cursor.fetchall()
                         flattened_results = [
@@ -91,9 +95,9 @@ def handler(request, jsonify):
                             cursor.close()
                             connection.close()
                             return jsonify({"datas": flattened_results, }), 200
+                    # For non-SELECT queries (INSERT, UPDATE, DELETE, etc.), execute and commit
                     else:
-                        # For non-SELECT queries (INSERT, UPDATE, DELETE, etc.), execute and commit
-                        # cursor.execute(statement)
+                        cursor.execute(statement)
 
                         # try:
                         #     connection.commit()

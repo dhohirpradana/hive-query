@@ -11,6 +11,7 @@ def handler(request, jsonify):
         # Retrieve host, port, username, and password from query parameters
         host = request.args.get('host')
         port = request.args.get('port')
+        db = request.args.get('db')
         username = request.args.get('username')
         password = request.args.get('password')
 
@@ -33,7 +34,8 @@ def handler(request, jsonify):
             line for line in original_lines if not line.startswith('--')]
         print(sql_statements)
         
-        db = 'default'
+        if not db:
+            db = 'default'
 
         # Execute each SQL statement
         cursor, connection = connection_handler(host, port, username, password, db)

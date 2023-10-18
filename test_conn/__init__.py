@@ -37,4 +37,4 @@ def handler(request, jsonify):
     except Exception as e:
         err = str(e)
         print(err)
-        return jsonify({"error": err}), 400
+        return jsonify({"message": err}), 400

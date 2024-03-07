@@ -32,7 +32,7 @@ def handler(request, jsonify):
             jars="hive-jdbc-uber-2.6.5.0-292.jar",
         )
 
-        return jsonify({"message": "Hive connection successful"}), 200
+        return jsonify({"message": "Hive connection successfully"}), 200
 
     except Exception as e:
         err = str(e)

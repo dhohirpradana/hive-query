@@ -1,6 +1,7 @@
-import jaydebeapi
 import re
+
 from connection import handler as connection_handler
+
 
 def handler(request, jsonify):
     try:
@@ -33,7 +34,7 @@ def handler(request, jsonify):
         sql_statements = [
             line for line in original_lines if not line.startswith('--')]
         print(sql_statements)
-        
+
         if not db:
             db = 'default'
 
@@ -51,7 +52,7 @@ def handler(request, jsonify):
                         if match:
                             db = match.group(1)
                             print(db)
-                        
+
                         # Create a cursor
                         cursor, connection = connection_handler(host, port, username, password, db)
                         cursor.execute(statement)
@@ -62,7 +63,8 @@ def handler(request, jsonify):
                         if index == len(sql_statements) - 1:
                             cursor.close()
                             connection.close()
-                            return jsonify({"message": f"Query executed successfully. Affected rows: {num_affected_rows}"}), 200
+                            return jsonify(
+                                {"message": f"Query executed successfully. Affected rows: {num_affected_rows}"}), 200
                     # Check the type of query to determine the operation
                     # If it's a SELECT query, fetch the results
                     if statement.strip().upper().startswith("SELECT"):
@@ -70,7 +72,7 @@ def handler(request, jsonify):
                         result = cursor.fetchall()
 
                         field_names = [desc[0]
-                                        for desc in cursor.description]
+                                       for desc in cursor.description]
                         if field_names:
                             fn_rm_prefix = [field.split(".")[1]
                                             for field in field_names]
@@ -112,13 +114,15 @@ def handler(request, jsonify):
                         if index == len(sql_statements) - 1:
                             cursor.close()
                             connection.close()
-                            return jsonify({"message": f"Query executed successfully. Affected rows: {num_affected_rows}"}), 200
+                            return jsonify(
+                                {"message": f"Query executed successfully. Affected rows: {num_affected_rows}"}), 200
                 except Exception as e:
                     err = str(e)
                     print(err)
                     if "org.apache.hive.service.cli.HiveSQLException: Error while compiling statement: FAILED: " in err:
                         err = err.replace(
-                            "org.apache.hive.service.cli.HiveSQLException: Error while compiling statement: FAILED: ", "")
+                            "org.apache.hive.service.cli.HiveSQLException: Error while compiling statement: FAILED: ",
+                            "")
                     return jsonify({"error": err}), 400
 
     except Exception as e:

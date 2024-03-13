@@ -3,8 +3,6 @@ import jaydebeapi
 # Hive JDBC driver class name
 driver_class = "org.apache.hive.jdbc.HiveDriver"
 
-# detail table
-
 
 def table_detail(table_name, request, jsonify):
     try:

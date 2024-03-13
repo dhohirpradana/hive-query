@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+
 from query import handler as hive_query_handler
 from table import handler as table_handler, table_detail as table_detail_handler
 from test_conn import handler as test_conn_handler
@@ -15,12 +16,9 @@ def hive_query():
 def table():
     return table_handler(request, jsonify)
 
-# table detail by table name
-
 
 @app.route('/table/<table_name>', methods=['GET'])
 def table_detail(table_name):
-    print(table_name)
     return table_detail_handler(table_name, request, jsonify)
 
 

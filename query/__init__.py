@@ -3,6 +3,30 @@ import re
 from connection import handler as connection_handler
 
 
+def rm_prefix(field_names):
+    # Initialize an empty list to store the results
+    results = []
+
+    # Iterate through each field name in the list
+    for field in field_names:
+        try:
+            # Attempt to split the field name at the first dot (.)
+            # Get the portion of the field name after the dot
+            # If there is no dot, index 1 will not exist and it will raise an exception
+            result = field.split(".")[1]
+            # Append the result to the list of results
+            results.append(result)
+        except IndexError:
+            # Handle case where the split does not return a valid portion after the dot
+            # Append a placeholder value or skip the field if necessary
+            # Here, we append None to the results list to represent an error
+            results.append(None)
+            # Alternatively, you could print an error message or log the error
+
+    # Return the list of results
+    return results
+
+
 def handler(request, jsonify):
     try:
         data = request.get_json()
@@ -71,11 +95,14 @@ def handler(request, jsonify):
                         cursor.execute(statement)
                         result = cursor.fetchall()
 
+                        print("DESC", cursor.description)
+
                         field_names = [desc[0]
                                        for desc in cursor.description]
+
+                        print("FIELDS", field_names)
                         if field_names:
-                            fn_rm_prefix = [field.split(".")[1]
-                                            for field in field_names]
+                            fn_rm_prefix = rm_prefix(field_names)
 
                             # Check if the current iteration is the last element in the list
                             if index == len(sql_statements) - 1:

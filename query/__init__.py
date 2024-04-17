@@ -20,7 +20,7 @@ def rm_prefix(field_names):
             # Handle case where the split does not return a valid portion after the dot
             # Append a placeholder value or skip the field if necessary
             # Here, we append None to the results list to represent an error
-            results.append(None)
+            results.append(field)
             # Alternatively, you could print an error message or log the error
 
     # Return the list of results
